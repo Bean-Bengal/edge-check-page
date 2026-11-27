@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edge Check Page</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:sans-serif;padding:12px;background:#faf6ee;color:#2b2b2b}
+.row{display:flex;gap:8px;align-items:flex-start}
+.row>*,.flex>*{min-width:0}
+.flex{display:flex;gap:8px}
+.card{flex:1;border:2px solid #2b2b2b;border-radius:8px;padding:8px;background:#fff;overflow-wrap:anywhere}
+pre{overflow:auto;max-width:100%;background:#eee;padding:8px;margin:0}
+.dd{position:relative;display:inline-block}
+.menu{display:none;position:absolute;left:0;top:100%;background:#fff;border:1px solid #333;z-index:5;min-width:120px;max-width:calc(100vw - 40px)}
+.dd.open .menu{display:block}
+.menu a{display:block;padding:6px 8px}
+#out{white-space:pre-wrap;font-family:monospace;font-size:13px;margin-top:12px;border-top:1px solid #999;padding-top:8px}
+h1{font-size:20px}
+</style></head><body>
+<script data-bean-store>(function(){if(typeof location!=='undefined'&&location&&location.protocol==='about:'&&typeof document!=='undefined'&&document.addEventListener){document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href^="#"]');if(!a||a.target==='_blank')return;e.preventDefault();try{location.hash=a.getAttribute('href')}catch(x){}},true)}if(typeof window==='undefined')return;try{window.localStorage.getItem('x');return}catch(e){}var d=Object.assign({},window.__BEAN_SAVED||{});function post(){try{parent.postMessage({type:'bean-store',data:d},'*')}catch(e){}}var ls={getItem:function(k){return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},setItem:function(k,v){d[k]=String(v);post()},removeItem:function(k){delete d[k];post()},clear:function(){d={};post()},key:function(i){return Object.keys(d)[i]||null}};Object.defineProperty(ls,'length',{get:function(){return Object.keys(d).length}});try{Object.defineProperty(window,'localStorage',{value:ls,configurable:true})}catch(e){}})();</script>
+<h1>Edge Check</h1>
+<div class="dd" id="dd"><button id="ddb">Menu</button>
+<div class="menu"><a href="#">One</a><a href="#">Two</a><a href="#">Three</a></div></div>
+<div class="row" style="margin-top:12px">
+<div class="card"><b>Long URL</b>
+<pre id="pre">https://example.com/a/very/long/path/that/keeps/going/and/going/with/no/spaces/at/all/index.html?query=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</pre></div>
+<div class="card">Second card with averyveryveryverylongunbrokenwordthatwouldpushtheflexrow</div>
+</div>
+<div id="out"></div>
+<script>
+function gcs(e){return window.getComputedStyle(e);}
+document.getElementById('ddb').onclick=function(){document.getElementById('dd').classList.toggle('open')};
+function check(){
+try{
+var out=[],W=window.innerWidth;
+out.push('innerWidth '+W+', scrollWidth '+document.body.scrollWidth+(document.body.scrollWidth<=W?' ok':' OVER'));
+var bad=[];
+document.querySelectorAll('body *').forEach(function(e){
+if(e.closest('pre')&&e.tagName!=='PRE')return;
+if(e.id==='out')return;
+var r=e.getBoundingClientRect();
+if(r.width&&r.right>W+0.5&&gcs(e).display!=='none')bad.push(e.tagName+'.'+e.className+' right='+r.right.toFixed(1));});
+out.push('past edge: '+(bad.length?bad.join('; '):'(none)'));
+var p=document.getElementById('pre');
+out.push('pre overflow: '+gcs(p).overflowX+', scrolls: '+(p.scrollWidth>p.clientWidth));
+var m=document.querySelector('.menu'),dd=document.getElementById('dd');
+var was=dd.classList.contains('open');
+dd.classList.add('open');var mr=m.getBoundingClientRect();
+out.push('dropdown right '+mr.right.toFixed(1)+(mr.right<=W?' inside':' CLIPPED'));
+if(!was)dd.classList.remove('open');
+document.getElementById('out').textContent=out.join('\n');
+}catch(err){document.getElementById('out').textContent='FAILED: '+err;}
+}
+window.onload=check;window.onresize=check;
+</script></body></html>
